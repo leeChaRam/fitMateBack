@@ -1,4 +1,4 @@
-package com.fitmate.domain.auth;
+package com.fitmate.fit_mate_server.domain.auth;
 
 /**
  * LoginRequest: 로그인 요청 데이터를 담는 객체

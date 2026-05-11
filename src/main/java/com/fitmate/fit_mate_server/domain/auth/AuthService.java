@@ -1,4 +1,4 @@
-package com.fitmate.domain.auth;
+package com.fitmate.fit_mate_server.domain.auth;
 
 import org.springframework.stereotype.Service;
 
