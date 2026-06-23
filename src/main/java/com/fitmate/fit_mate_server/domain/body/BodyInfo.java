@@ -8,12 +8,15 @@ import com.fitmate.fit_mate_server.domain.member.Member;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,6 +31,7 @@ public class BodyInfo {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @ManyToOne(fetch = FetchType.LAZY) // 회원과 연결
     @JoinColumn(name = "member_id")
     @JsonIgnore
@@ -41,5 +45,26 @@ public class BodyInfo {
     @Column(columnDefinition = "TEXT")
     private String memo;          // 메모 (길어질 수 있으니 TEXT)
 
+
     private LocalDateTime createdAt; // 기록 생성 시간
+
+    // 각가의 지표별 공개 설정 옵션 (Enum 매핑)
+    @Enumerated(EnumType.ORDINAL) // 💡 STRING 대신 ORDINAL로 변경!
+    @Column(columnDefinition = "TINYINT") // DB 공간 효율을 위해 TINYINT 사용 (생략 가능)
+    private PrivacyOption weightPrivacy; // DB에는 PRIVATE=0, DELTA_ONLY=1, PUBLIC=2 로 저장됨
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(columnDefinition = "TINYINT")
+    private PrivacyOption musclePrivacy;
+
+    @Enumerated(EnumType.ORDINAL)
+    @Column(columnDefinition = "TINYINT")
+    private PrivacyOption fatPrivacy;
+
+
+    // 데이터가 처음 INSERT 될 때 현재 시간을 자동으로 주입해 줌
+    @PrePersist
+    public void prePersist(){
+        this.createdAt = LocalDateTime.now();
+    }
 }

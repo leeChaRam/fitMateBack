@@ -23,7 +23,7 @@ public class BodyInfoService {
         Member member = memberRepository.findById(request.getMemberId())
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        // 2. BodyInfo 엔티티 생성 및 회원 연결
+        // 2. 빌더 패턴을 이용하여 기존 테이블 형식에 맞게 세팅
         BodyInfo bodyInfo = BodyInfo.builder()
                 .member(member)
                 .measureDate(request.getMeasureDate())
@@ -31,8 +31,21 @@ public class BodyInfoService {
                 .muscleMass(request.getMuscleMass())
                 .fatMass(request.getFatMass())
                 .memo(request.getMemo())
-                .createdAt(LocalDateTime.now())
+                // 기본값 분기 처리 (선택 안했을 경우 나만보기 혹은 기본값 세팅)
+                .weightPrivacy(request.getWeightPrivacy() != null ? request.getWeightPrivacy() : PrivacyOption.DELTA_ONLY)
+                .musclePrivacy(request.getMusclePrivacy() != null ? request.getMusclePrivacy() : PrivacyOption.PRIVATE)
+                .fatPrivacy(request.getFatPrivacy() != null ? request.getFatPrivacy() : PrivacyOption.PRIVATE)
                 .build();
+                        // 2. BodyInfo 엔티티 생성 및 회원 연결
+        // BodyInfo bodyInfo = BodyInfo.builder()
+        //         .member(member)
+        //         .measureDate(request.getMeasureDate())
+        //         .weight(request.getWeight())
+        //         .muscleMass(request.getMuscleMass())
+        //         .fatMass(request.getFatMass())
+        //         .memo(request.getMemo())
+        //         .createdAt(LocalDateTime.now())
+        //         .build();
 
         return bodyInfoRepository.save(bodyInfo).getId();
     }
