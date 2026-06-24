@@ -1,11 +1,10 @@
 package com.fitmate.fit_mate_server.domain.body;
 
 
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-@Getter
-@RequiredArgsConstructor
+
 public enum PrivacyOption {
     PRIVATE(1, "🔒 나만 보기"),
     DELTA_ONLY(2, "📈 변화량만 공개"),
@@ -14,7 +13,13 @@ public enum PrivacyOption {
     private final int dbValue; // DB에 저장될 숫자 (1, 2, 3)
     private final String title;
 
-     // 이코드 오류로 get 추가 실행시 괜찮으면 지워보기
+    PrivacyOption(int dbValue, String title) {
+        this.dbValue = dbValue;
+        this.title = title;
+    }
+
+    // 💡 1. Jackson이 JSON으로 직렬화/역직렬화할 때 dbValue(숫자)를 기준으로 삼도록 지정합니다.
+    @JsonValue
     public int getDbValue() {
         return this.dbValue;
     }
@@ -23,8 +28,10 @@ public enum PrivacyOption {
         return this.title;
     }
 
-    // 숫자를 가지고 Enum을 찾아내는 역방향 메서드
-    public static PrivacyOption fromDbValue(int value) {
+    // 💡 2. Postman에서 숫자 3이 들어오면 이 메서드를 실행해 PUBLIC을 찾으라고 스프링에게 명시합니다.
+    @JsonCreator
+    public static PrivacyOption fromDbValue(Integer value) {
+        if (value == null) return null;
         for (PrivacyOption option : PrivacyOption.values()) {
             if (option.getDbValue() == value) {
                 return option;

@@ -1,6 +1,5 @@
 package com.fitmate.fit_mate_server.domain.body;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
@@ -31,21 +30,7 @@ public class BodyInfoService {
                 .muscleMass(request.getMuscleMass())
                 .fatMass(request.getFatMass())
                 .memo(request.getMemo())
-                // 기본값 분기 처리 (선택 안했을 경우 나만보기 혹은 기본값 세팅)
-                .weightPrivacy(request.getWeightPrivacy() != null ? request.getWeightPrivacy() : PrivacyOption.DELTA_ONLY)
-                .musclePrivacy(request.getMusclePrivacy() != null ? request.getMusclePrivacy() : PrivacyOption.PRIVATE)
-                .fatPrivacy(request.getFatPrivacy() != null ? request.getFatPrivacy() : PrivacyOption.PRIVATE)
                 .build();
-                        // 2. BodyInfo 엔티티 생성 및 회원 연결
-        // BodyInfo bodyInfo = BodyInfo.builder()
-        //         .member(member)
-        //         .measureDate(request.getMeasureDate())
-        //         .weight(request.getWeight())
-        //         .muscleMass(request.getMuscleMass())
-        //         .fatMass(request.getFatMass())
-        //         .memo(request.getMemo())
-        //         .createdAt(LocalDateTime.now())
-        //         .build();
 
         return bodyInfoRepository.save(bodyInfo).getId();
     }

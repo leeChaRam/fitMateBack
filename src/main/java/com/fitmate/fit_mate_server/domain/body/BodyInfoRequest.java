@@ -1,8 +1,8 @@
 package com.fitmate.fit_mate_server.domain.body;
 
 import java.time.LocalDate;
-import jakarta.validation.constraints.NotNull;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,8 +11,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class BodyInfoRequest {
-
+    @NotNull(message = "회원 ID는 필수입니다.")
     private Long memberId;      // 누구의 기록인지 (중요!)
+    
     @NotNull(message = "측정일은 필수입니다.")
     private LocalDate measureDate; 
     @NotNull(message = "체중은 필수입니다.")
