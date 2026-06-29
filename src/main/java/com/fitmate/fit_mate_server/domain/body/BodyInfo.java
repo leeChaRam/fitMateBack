@@ -37,8 +37,10 @@ public class BodyInfo {
 
     private LocalDate measureDate; // 측정일 (날짜만)
     private Double weight;        // 체중
+    private Double height;        // 키
     private Double muscleMass;    // 근육량
     private Double fatMass;       // 체지방량
+    
     
     @Column(columnDefinition = "TEXT")
     private String memo;          // 메모 (길어질 수 있으니 TEXT)

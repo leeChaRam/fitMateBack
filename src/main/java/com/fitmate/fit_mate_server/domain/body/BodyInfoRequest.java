@@ -2,6 +2,8 @@ package com.fitmate.fit_mate_server.domain.body;
 
 import java.time.LocalDate;
 
+import com.fitmate.fit_mate_server.domain.member.PrivacyOption;
+
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
 import lombok.Getter;
@@ -18,6 +20,8 @@ public class BodyInfoRequest {
     private LocalDate measureDate; 
     @NotNull(message = "체중은 필수입니다.")
     private Double weight;
+    @NotNull(message = "키는 필수입니다.")
+    private Double height;
 
     private Double muscleMass;
     private Double fatMass;

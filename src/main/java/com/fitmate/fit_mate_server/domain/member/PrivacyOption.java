@@ -1,4 +1,4 @@
-package com.fitmate.fit_mate_server.domain.body;
+package com.fitmate.fit_mate_server.domain.member;
 
 
 import com.fasterxml.jackson.annotation.JsonCreator;

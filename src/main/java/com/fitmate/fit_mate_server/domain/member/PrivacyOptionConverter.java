@@ -1,4 +1,4 @@
-package com.fitmate.fit_mate_server.domain.body;
+package com.fitmate.fit_mate_server.domain.member;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;

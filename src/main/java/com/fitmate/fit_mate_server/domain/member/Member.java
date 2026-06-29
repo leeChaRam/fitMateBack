@@ -1,8 +1,6 @@
 package com.fitmate.fit_mate_server.domain.member;
 
 
-import com.fitmate.fit_mate_server.domain.body.PrivacyOption;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
