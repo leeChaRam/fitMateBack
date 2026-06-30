@@ -1,10 +1,11 @@
 package com.fitmate.fit_mate_server.domain.body;
 
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import java.util.List;
 
 @Data
 @Builder
@@ -19,8 +20,13 @@ public class DashboardResponse {
 
     // 변동폭 (이전 측정 대비 증감치)
     private String weightDelta;
+    private Integer weightStatus; // 0: 다운, 1: 변동없음, 2: 업
+
     private String muscleDelta;
+    private Integer muscleStatus;
+
     private String fatDelta;
+    private Integer fatStatus;
 
     // 백엔드에서 미리 계산해서 넘겨줄 지표
     private Double bmi;
@@ -42,7 +48,12 @@ public class DashboardResponse {
 
         // 💡 각 과거 기록 시점에서의 직전 대비 증감치 필드 추가
         private String weightDelta;
+        private Integer weightStatus; 
+
         private String muscleDelta;
+        private Integer muscleStatus;
+
         private String fatDelta;
+        private Integer fatStatus;
     }
 }
