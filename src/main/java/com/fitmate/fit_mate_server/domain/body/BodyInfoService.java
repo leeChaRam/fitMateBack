@@ -2,7 +2,6 @@ package com.fitmate.fit_mate_server.domain.body;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -10,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import com.fitmate.fit_mate_server.domain.member.Member;
 import com.fitmate.fit_mate_server.domain.member.MemberRepository;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -18,6 +19,14 @@ import lombok.RequiredArgsConstructor;
 public class BodyInfoService {
     private final BodyInfoRepository bodyInfoRepository;
     private final MemberRepository memberRepository;
+
+    // 💡 문자열과 상태 코드를 한 번에 묶어서 리턴할 가벼운 그릇
+    @Getter
+    @AllArgsConstructor
+    private static class DeltaResult {
+        private final String delta;
+        private final Integer status;
+    }
 
     public Long saveBodyInfo(BodyInfoRequest request) {
         // 1. 회원 존재 여부 확인
@@ -55,9 +64,9 @@ public class BodyInfoService {
         BodyInfo previous = history.size() > 1 ? history.get(1) : null;
 
         // 3. 증감치(Delta) 계산 (소수점 첫째자리까지 반올림)
-        String topWeightDelta = formatDelta(latest.getWeight(), (previous != null) ? previous.getWeight() : null);
-        String topMuscleDelta = formatDelta(latest.getMuscleMass(), (previous != null) ? previous.getMuscleMass() : null);
-        String topFatDelta = formatDelta(latest.getFatMass(), (previous != null) ? previous.getFatMass() : null);
+        DeltaResult weightResult = calculateDelta(latest.getWeight(), (previous != null) ? previous.getWeight() : null);
+        DeltaResult muscleResult = calculateDelta(latest.getMuscleMass(), (previous != null) ? previous.getMuscleMass() : null);
+        DeltaResult fatResult = calculateDelta(latest.getFatMass(), (previous != null) ? previous.getFatMass() : null);
 
         // 4. BMI 및 기초대사량(BMR) 계산 (수식 예시 - 필요시 유저 키/성별 데이터 연동)
         // 임시로 키 175cm 가정 하에 간단한 BMI 계산 예시 ($BMI = kg / m^2$)
@@ -76,9 +85,9 @@ public class BodyInfoService {
             BodyInfo olderItem = (i + 1 < history.size()) ? history.get(i + 1) : null;
 
             // 각 항목 기준의 증감치 계산
-            String hWeightDelta = formatDelta(currentItem.getWeight(), (olderItem != null) ? olderItem.getWeight() : null);
-            String hMuscleDelta = formatDelta(currentItem.getMuscleMass(), (olderItem != null) ? olderItem.getMuscleMass() : null);
-            String hFatDelta = formatDelta(currentItem.getFatMass(), (olderItem != null) ? olderItem.getFatMass() : null);
+            DeltaResult hWeight = calculateDelta(currentItem.getWeight(), (olderItem != null) ? olderItem.getWeight() : null);
+            DeltaResult hMuscle = calculateDelta(currentItem.getMuscleMass(), (olderItem != null) ? olderItem.getMuscleMass() : null);
+            DeltaResult hFat = calculateDelta(currentItem.getFatMass(), (olderItem != null) ? olderItem.getFatMass() : null);
 
             DashboardResponse.BodyInfoHistoryDto dto = DashboardResponse.BodyInfoHistoryDto.builder()
                     .id(currentItem.getId())
@@ -86,9 +95,12 @@ public class BodyInfoService {
                     .weight(currentItem.getWeight())
                     .muscleMass(currentItem.getMuscleMass())
                     .fatMass(currentItem.getFatMass())
-                    .weightDelta(hWeightDelta)
-                    .muscleDelta(hMuscleDelta)
-                    .fatDelta(hFatDelta)
+                    .weightDelta(hWeight.getDelta())
+                    .weightStatus(hWeight.getStatus())
+                    .muscleDelta(hMuscle.getDelta())
+                    .muscleStatus(hMuscle.getStatus())
+                    .fatDelta(hFat.getDelta())
+                    .fatStatus(hFat.getStatus())
                     .build();
             
             historyDtos.add(dto);
@@ -100,9 +112,12 @@ public class BodyInfoService {
                 .latestMuscleMass(latest.getMuscleMass())
                 .latestFatMass(latest.getFatMass())
                 .measureDate(latest.getMeasureDate().toString())
-                .weightDelta(topWeightDelta)
-                .muscleDelta(topMuscleDelta)
-                .fatDelta(topFatDelta)
+                .weightDelta(weightResult.getDelta())
+                .weightStatus(weightResult.getStatus())
+                .muscleDelta(muscleResult.getDelta())
+                .muscleStatus(muscleResult.getStatus())
+                .fatDelta(fatResult.getDelta())
+                .fatStatus(fatResult.getStatus())
                 .bmi(bmi)
                 .bmr(bmr)
                 .historyList(historyDtos)
@@ -111,20 +126,24 @@ public class BodyInfoService {
     /**
      * 최신값과 직전값을 비교하여 변동폭 문자열(▲ 0.3 / ▼ 0.8)을 만들어주는 헬퍼 메서드
      */
-    private String formatDelta(Double latestVal, Double previousVal) {
-        if (latestVal == null || previousVal == null) {
-            return "-";
+    private DeltaResult calculateDelta(Double current, Double previous) {
+        // 비교 대상이 없으면 변동 없음(1) 처리
+        if (current == null || previous == null) {
+            return new DeltaResult("-", 1); 
         }
         
-        double difference = latestVal - previousVal;
-        double roundedDiff = Math.round(Math.abs(difference) * 10.0) / 10.0;
+        double diff = current - previous;
+        double roundedDiff = Math.round(Math.abs(diff) * 10.0) / 10.0;
 
-        if (difference > 0) {
-            return roundedDiff + " ▲";
-        } else if (difference < 0) {
-            return roundedDiff + " ▼";
+        // 0.05 미만의 미미한 차이는 변동 없음(1) 처리
+        if (Math.abs(diff) < 0.05) {
+            return new DeltaResult("0.0", 1);
+        }
+
+        if (diff > 0) {
+            return new DeltaResult("▲ " + roundedDiff, 2); // 업 (2)
         } else {
-            return "0.0";
+            return new DeltaResult("▼ " + roundedDiff, 0); // 다운 (0)
         }
     }
     
