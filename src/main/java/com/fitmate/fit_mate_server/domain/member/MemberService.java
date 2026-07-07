@@ -23,6 +23,7 @@ public class MemberService {
             .email(request.getEmail())
             .password(request.getPassword())
             .name(request.getName())
+            .birthDate(request.getBirthDate())
             .build();
 
         // 3. 저장 및 ID 반환 

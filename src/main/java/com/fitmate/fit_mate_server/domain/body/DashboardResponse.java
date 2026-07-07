@@ -28,10 +28,19 @@ public class DashboardResponse {
     private String fatDelta;
     private Integer fatStatus;
 
+    // 체지방률 추가
+    private Double fatPercentage;
+    private String fatPercentageDelta;
+    private Integer fatPercentageStatus;
+
     // 백엔드에서 미리 계산해서 넘겨줄 지표
     private Double bmi;
-    private Integer bmr; // 기초대사량
+    private Integer bmiStatus; // 0: 저체중, 1: 정상, 2: 과체중, 3: 비만 
 
+    private Integer bmr; // 기초대사량
+    private String bmrDelta;
+    private Integer bmrStatus; 
+    
     // 하단 리스트 및 차트용 전체 히스토리
     private List<BodyInfoHistoryDto> historyList;
 

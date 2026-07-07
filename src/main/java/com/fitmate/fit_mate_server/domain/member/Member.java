@@ -1,6 +1,9 @@
 package com.fitmate.fit_mate_server.domain.member;
 
 
+import java.time.LocalDate;
+import java.time.Period;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -25,6 +28,8 @@ public class Member {
 
     private String name;
 
+    private LocalDate birthDate;
+
     // 각가의 지표별 공개 설정 옵션 (Enum 매핑)
     
     @Column(columnDefinition = "TINYINT DEFAULT 1") // DB 공간 효율을 위해 TINYINT 사용 (생략 가능)
@@ -39,9 +44,16 @@ public class Member {
     private PrivacyOption fatPrivacy = PrivacyOption.PRIVATE;
 
     @Builder
-    public Member(String email, String password, String name){
+    public Member(String email, String password, String name, LocalDate birthDate){
         this.email = email;
         this.password = password;
         this.name = name;
+        this.birthDate = birthDate;
+    }
+    
+    // 현재 시점 기준 만 나이를 계산해서 반환
+    public int getAge() {
+        if (birthDate == null) return 25; // 기본값 (임시 - 정책에 따라 조정)
+        return Period.between(birthDate, LocalDate.now()).getYears();
     }
 }

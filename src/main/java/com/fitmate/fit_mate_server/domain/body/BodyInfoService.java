@@ -52,6 +52,9 @@ public class BodyInfoService {
     }
 
     public DashboardResponse getDashboardData(Long memberId){
+        Member member = memberRepository.findById(memberId)
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
         // 1. 해당 유저의 모든 체성분 기록을 최신순으로 조회
         List<BodyInfo> history = bodyInfoRepository.findTop10ByMemberIdOrderByMeasureDateDesc(memberId);
 
@@ -68,13 +71,33 @@ public class BodyInfoService {
         DeltaResult muscleResult = calculateDelta(latest.getMuscleMass(), (previous != null) ? previous.getMuscleMass() : null);
         DeltaResult fatResult = calculateDelta(latest.getFatMass(), (previous != null) ? previous.getFatMass() : null);
 
+        // 체지방률 계산 (최신 + 직전)
+        Double latestFatPercentage = calculateFatPercentage(latest.getFatMass(), latest.getWeight());
+        Double previousFatPercentage = (previous != null)
+            ? calculateFatPercentage(previous.getFatMass(), previous.getWeight())
+            : null;
+        DeltaResult fatPercentageResult = calculateDelta(latestFatPercentage, previousFatPercentage);
+
+
         // 4. BMI 및 기초대사량(BMR) 계산 (수식 예시 - 필요시 유저 키/성별 데이터 연동)
         // 임시로 키 175cm 가정 하에 간단한 BMI 계산 예시 ($BMI = kg / m^2$)
         double heightInMeters = latest.getHeight() / 100.0;
         Double bmi = Math.round((latest.getWeight() / (heightInMeters * heightInMeters)) * 10.0) / 10.0;
-
-        // 하드코딩 데이터를 대체할 기초대사량 기본 연산 (예시: 해리스-베네딕트 공식 변형 간이 정수값)
-        Integer bmr = (int) (66.5 + (13.75 * latest.getWeight()) + (5.003 * latest.getHeight()) - (6.755 * 25));
+        Integer bmiStatus = getBmiStatus(bmi);
+        
+        // 각 측정 시점 기준으로 나이를 따로 계산 
+        int latestAge = member.getAgeAt(latest.getMeasureDate());
+        int previousAge = (previous != null) ? member.getAgeAt(previous.getMeasureDate()) : latestAge;
+        
+        // BMR 계산 (최신 + 직전) 후 증감 비교
+        Integer bmr = calculateBmr(latest.getWeight(), latest.getHeight(), latestAge);
+        Integer previousBmr = (previous != null)
+                ? calculateBmr(previous.getWeight(), previous.getHeight(), previousAge)
+                : null;
+        DeltaResult bmrResult = calculateDelta(
+                bmr != null ? bmr.doubleValue() : null,
+                previousBmr != null ? previousBmr.doubleValue() : null
+        );
 
         // 5. ⭐ 히스토리 리스트를 돌면서 각 항목의 직전 대비 증감치 계산
         List<DashboardResponse.BodyInfoHistoryDto> historyDtos = new ArrayList<>();
@@ -118,8 +141,14 @@ public class BodyInfoService {
                 .muscleStatus(muscleResult.getStatus())
                 .fatDelta(fatResult.getDelta())
                 .fatStatus(fatResult.getStatus())
+                .fatPercentage(latestFatPercentage)
+                .fatPercentageDelta(fatPercentageResult.getDelta())
+                .fatPercentageStatus(fatPercentageResult.getStatus())
                 .bmi(bmi)
+                .bmiStatus(bmiStatus)
                 .bmr(bmr)
+                .bmrDelta(bmrResult.getDelta())
+                .bmrStatus(bmrResult.getStatus())
                 .historyList(historyDtos)
                 .build();
     }
@@ -145,6 +174,26 @@ public class BodyInfoService {
         } else {
             return new DeltaResult("▼ " + roundedDiff, 0); // 다운 (0)
         }
+    }
+
+    // 체지방률 계산 (체지방량 / 체중 * 100), 소수 첫째자리 반올림
+    private Double calculateFatPercentage(Double fatMass, Double weight) {
+        if (fatMass == null || weight == null || weight == 0) return null;
+        return Math.round((fatMass / weight) * 100 * 10.0) / 10.0;
+    }
+
+    // bmi 값에 딸느 범위 카테고리 반환 
+    private int getBmiStatus(double bmi) {
+        if (bmi < 18.5) return 0; // 저체중
+        else if (bmi < 23.0) return 1; // 정상
+        else if (bmi < 25.0) return 2; // 과체중
+        else return 3; // 비만
+    }
+
+    //직전 기록의 체중/신장을 이용해 직전 시점 BMR을 역산하는 헬퍼
+    private Integer calculateBmr(Double weight, Double height, int age) {
+        if (weight == null || height == null) return null;
+        return (int) (66.5 + (13.75 * weight) + (5.003 * height) - (6.755 * age));
     }
     
 }
