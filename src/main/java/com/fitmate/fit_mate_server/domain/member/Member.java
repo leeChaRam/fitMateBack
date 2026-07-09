@@ -56,4 +56,10 @@ public class Member {
         if (birthDate == null) return 25; // 기본값 (임시 - 정책에 따라 조정)
         return Period.between(birthDate, LocalDate.now()).getYears();
     }
+
+    // 측정 시점 기준의 만나이 계산
+    public int getAgeAt(LocalDate referenceDate) {
+        if (birthDate == null) return 25; // 기본값
+        return Period.between(birthDate, referenceDate).getYears();
+    }
 }
