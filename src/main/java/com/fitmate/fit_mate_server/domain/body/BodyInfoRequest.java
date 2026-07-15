@@ -20,8 +20,6 @@ public class BodyInfoRequest {
     private LocalDate measureDate; 
     @NotNull(message = "체중은 필수입니다.")
     private Double weight;
-    @NotNull(message = "키는 필수입니다.")
-    private Double height;
 
     private Double muscleMass;
     private Double fatMass;
