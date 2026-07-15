@@ -24,6 +24,7 @@ public class MemberService {
             .password(request.getPassword())
             .name(request.getName())
             .birthDate(request.getBirthDate())
+            .height(request.getHeight())
             .build();
 
         // 3. 저장 및 ID 반환 

@@ -30,8 +30,10 @@ public class Member {
 
     private LocalDate birthDate;
 
-    // 각가의 지표별 공개 설정 옵션 (Enum 매핑)
-    
+    @Column(nullable = false)
+    private Double height;
+
+    // 각각의 지표별 공개 설정 옵션 (Enum 매핑)
     @Column(columnDefinition = "TINYINT DEFAULT 1") // DB 공간 효율을 위해 TINYINT 사용 (생략 가능)
     private PrivacyOption weightPrivacy = PrivacyOption.PRIVATE; // 기본값 : 나만보기, DB에는 PRIVATE=0, DELTA_ONLY=1, PUBLIC=2 로 저장됨
 
@@ -44,11 +46,22 @@ public class Member {
     private PrivacyOption fatPrivacy = PrivacyOption.PRIVATE;
 
     @Builder
-    public Member(String email, String password, String name, LocalDate birthDate){
+    public Member(String email, String password, String name, LocalDate birthDate, Double height){
         this.email = email;
         this.password = password;
         this.name = name;
         this.birthDate = birthDate;
+        this.height = height;
+    }
+
+    public void updateHeight(Double height) {
+        this.height = height;
+    }
+
+    public void updatePrivacySettings(PrivacyOption weightPrivacy, PrivacyOption musclePrivacy, PrivacyOption fatPrivacy) {
+        if (weightPrivacy != null) this.weightPrivacy = weightPrivacy;
+        if (musclePrivacy != null) this.musclePrivacy = musclePrivacy;
+        if (fatPrivacy != null) this.fatPrivacy = fatPrivacy;
     }
     
     // 현재 시점 기준 만 나이를 계산해서 반환
