@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -16,7 +17,7 @@ public class MemberController {
     private final MemberService memberService;
 
     @PostMapping("/join")
-    public ResponseEntity<String> join(@RequestBody MemberJoinRequest request){
+    public ResponseEntity<String> join(@Valid @RequestBody MemberJoinRequest request){
         try{
             memberService.join(request);
             return ResponseEntity.ok("회원가입 성공!");
