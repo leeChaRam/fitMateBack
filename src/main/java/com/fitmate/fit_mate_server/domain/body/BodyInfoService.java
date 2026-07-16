@@ -80,8 +80,8 @@ public class BodyInfoService {
 
         // 4. BMI 및 기초대사량(BMR) 계산 (수식 예시 - 필요시 유저 키/성별 데이터 연동)
         // 임시로 키 175cm 가정 하에 간단한 BMI 계산 예시 ($BMI = kg / m^2$)
-        double heightInMeters = member.getHeight() / 100.0;
-        Double bmi = Math.round((latest.getWeight() / (heightInMeters * heightInMeters)) * 10.0) / 10.0;
+        double heightInMeters = member.getHeight();
+        Double bmi = Math.round((latest.getWeight() / ((heightInMeters/ 100.0) * (heightInMeters/ 100.0))) * 10.0) / 10.0;
         Integer bmiStatus = getBmiStatus(bmi);
         
         // 각 측정 시점 기준으로 나이를 따로 계산 
