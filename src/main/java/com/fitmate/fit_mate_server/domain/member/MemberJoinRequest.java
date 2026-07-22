@@ -31,6 +31,9 @@ public class MemberJoinRequest {
     )
     private String password;
 
+    @NotBlank(message = "비밀번호 확인을 입력해주세요.")
+    private String checkPassword;
+
     @NotBlank(message="이름은 필수입니다.")
     private String name;
     
