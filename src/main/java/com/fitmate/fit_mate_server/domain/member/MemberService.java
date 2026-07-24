@@ -24,6 +24,19 @@ public class MemberService {
         "^(?=.*[A-Za-z])(?=.*\\d)(?=.*[!@#$%^&*()_+\\-=\\[\\]{};':\"\\\\|,.<>/?]).{8,20}$"
     );
     
+    /** 토큰에서 추출한 memberId로 내 정보 조회 */
+    public MemberResponse getMe(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+    
+        return MemberResponse.builder()
+            .id(member.getId())
+            .email(member.getEmail())
+            .name(member.getName())
+            .height(member.getHeight())
+            .build();
+    }
+    
     public Long join(MemberJoinRequest request){
         // 1. 생년월일 검증 (서버 시간 기준 미래 불가)
         validateBirthDate(request.getBirthDate());

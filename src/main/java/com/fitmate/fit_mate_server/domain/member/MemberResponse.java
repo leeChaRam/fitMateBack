@@ -1,15 +1,15 @@
-package com.fitmate.fit_mate_server.domain.auth;
+package com.fitmate.fit_mate_server.domain.member;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 @Getter
-@Builder 
+@Builder
 @AllArgsConstructor
-public class LoginResponse {
-    private String token;
-    private Long memberId;
+public class MemberResponse {
+    private Long id;
     private String email;
     private String name;
+    private Double height;
 }

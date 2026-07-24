@@ -1,4 +1,4 @@
-package com.fitmate.fit_mate_server.config;
+package com.fitmate.fit_mate_server.global.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
