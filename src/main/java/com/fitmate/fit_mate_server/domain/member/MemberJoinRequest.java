@@ -37,7 +37,7 @@ public class MemberJoinRequest {
     @NotBlank(message="이름은 필수입니다.")
     private String name;
     
-    @NotBlank(message="생년월일은은 필수입니다.")
+    @NotNull(message="생년월일은은 필수입니다.")
     @PastOrPresent(message="생년월일은 현재 날짜보다 미래일 수 없습니다.")
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate birthDate;
