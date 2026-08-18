@@ -45,8 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
                 // principal 자리에 memberId(Long)를 그대로 담아둡니다.
                 // 컨트롤러에서 @AuthenticationPrincipal Long memberId로 꺼내 쓸 수 있어요.
-                UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(memberId, null, List.of());
+                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(memberId, null, List.of());
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
             // 토큰이 유효하지 않으면 그냥 인증 안 된 상태로 통과시킵니다.
