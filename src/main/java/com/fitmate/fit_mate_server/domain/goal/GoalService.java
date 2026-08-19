@@ -20,9 +20,10 @@ public class GoalService {
     private final GoalRepository goalRepository;
     private final MemberRepository memberRepository;
 
-    // 목표설정 화면에서 "체크된 지표 전체"를 한 번에 넘겨 받아 통째로 동기화 
-    public void saveGoals(Long memberId, List<GoalRequest> requests) {
-        Memeber member = memberRepository.findById(memberId)
+    // 목표설정 화면에서 "체크된 지표 전체"를 받아 회원의 목표 상태를 통째로 동기화하고,
+    // 동기화 후 활성 목표 전체를 리턴한다 (생성/갱신/비활성화가 한 번에 일어남)
+    public List<GoalResponse> syncGoals(Long memberId, List<GoalRequest> requests) {
+        Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
         Set<GoalMetric> requestMetrics = requests.stream()
@@ -45,13 +46,22 @@ public class GoalService {
             goalRepository.save(goal);
         }
 
+        // 3. 최종 활성 목표 전체를 다시 조회해서 리턴 (프론트가 바로 화면에 반영할 수 있게)
+        return toResponses(goalRepository.findByMemberAndActiveTrue(member));
+
     }
 
     // 홈 화면: active=true만 조회하면 끝, 별도 "최신" 로직 불필요
-    public List<Goal> getActiveGoals(Long memberId) {
+    public List<GoalResponse> getActiveGoals(Long memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
-        return goalRepository.findByMemberAndActiveTrue(member);
+        return toResponses(goalRepository.findByMemberAndActiveTrue(member));
+    }
+
+    private List<GoalResponse> toResponses(List<Goal> goals) {
+        return goals.stream()
+                .map(GoalResponse::from)
+                .collect(Collectors.toList());
     }
 
     
