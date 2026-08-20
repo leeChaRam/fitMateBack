@@ -1,7 +1,9 @@
 package com.fitmate.fit_mate_server.domain.body;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,9 +30,9 @@ public class BodyInfoService {
         private final Integer status;
     }
 
-    public Long saveBodyInfo(BodyInfoRequest request) {
+    public Long saveBodyInfo(Long memberId, BodyInfoRequest request) {
         // 1. 회원 존재 여부 확인
-        Member member = memberRepository.findById(request.getMemberId())
+        Member member = memberRepository.findById(memberId)
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
         // 2. 빌더 패턴을 이용하여 기존 테이블 형식에 맞게 세팅
@@ -48,6 +50,12 @@ public class BodyInfoService {
 
     public List<BodyInfo> getRecentBodyInfos(Long memberId) {
     return bodyInfoRepository.findTop10ByMemberIdOrderByMeasureDateDesc(memberId);
+    }
+
+    // 홈 화면용 - 기록이 한 번도 없으면 Optional.empty() (= null로 취급)
+    public Optional<LocalDate> getLastRecordDate(Long memberId) {
+        return bodyInfoRepository.findTopByMemberIdOrderByMeasureDateDesc(memberId)
+                .map(BodyInfo::getMeasureDate);
     }
 
     public DashboardResponse getDashboardData(Long memberId){

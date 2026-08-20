@@ -12,10 +12,7 @@ import lombok.Setter;
 @Data
 @Getter
 @Setter
-public class BodyInfoRequest {
-    @NotNull(message = "회원 ID는 필수입니다.")
-    private Long memberId;      // 누구의 기록인지 (중요!)
-    
+public class BodyInfoRequest {    
     @NotNull(message = "측정일은 필수입니다.")
     private LocalDate measureDate; 
     @NotNull(message = "체중은 필수입니다.")

@@ -18,6 +18,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import com.fitmate.fit_mate_server.global.jwt.JwtAuthenticationFilter;
 import com.fitmate.fit_mate_server.global.jwt.JwtTokenProvider;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 
 @Configuration
@@ -48,6 +49,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/members/join", "/api/auth/login").permitAll()
                 .anyRequest().authenticated()
             )
+            .exceptionHandling(ex -> ex
+            .authenticationEntryPoint((request, response, authException) -> {
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "인증이 필요합니다.");
+            }))
             .addFilterBefore(
                 new JwtAuthenticationFilter(jwtTokenProvider),
                 UsernamePasswordAuthenticationFilter.class
