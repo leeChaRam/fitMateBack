@@ -13,6 +13,8 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class HomeResponse {
+    private String name;
+
     private List<GoalResponse> goals;
 
     private LocalDate lastRecordDate;     // 마지막 기록일, 기록 이력이 없으면 null
