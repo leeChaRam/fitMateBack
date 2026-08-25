@@ -16,11 +16,16 @@ spring.jpa.properties.hibernate.format_sql=true
 # MariaDB 호환성을 위한 방언 설정
 spring.jpa.database-platform=org.hibernate.dialect.MariaDBDialect
 
-jwt.secret=비밀키 넣어야함 
+jwt.secret=비밀키 넣어야함
 jwt.expiration-ms=3600000
+
+# Cloudinary (프로필 이미지 업로드) - https://cloudinary.com 가입 후 Dashboard에서 발급
+cloudinary.cloud-name=
+cloudinary.api-key=
+cloudinary.api-secret=
 
 ## 초기 설정
    cp src/main/resources/application.properties.sample src/main/resources/application.properties
-   그 다음 <DB_HOST>, <DB_USERNAME>, <DB_PASSWORD>, <JWT_SECRET_KEY> 부분을 실제 값으로 채워주세요.
+   그 다음 <DB_HOST>, <DB_USERNAME>, <DB_PASSWORD>, <JWT_SECRET_KEY>, <CLOUDINARY_*> 부분을 실제 값으로 채워주세요.
 
    

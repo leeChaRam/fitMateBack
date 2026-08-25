@@ -10,6 +10,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.PastOrPresent;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,6 +36,7 @@ public class MemberJoinRequest {
     private String checkPassword;
 
     @NotBlank(message="이름은 필수입니다.")
+    @Size(max = 20, message = "이름은 20자 이내로 입력해주세요.")
     private String name;
     
     @NotNull(message="생년월일은은 필수입니다.")

@@ -26,7 +26,13 @@ public class Member {
     @Column(nullable = false)
     private String password;
 
+    @Column(length = 20)
     private String name;
+
+    @Column(length = 150)
+    private String introduction;
+
+    private String profileImageUrl;
 
     private LocalDate birthDate;
 
@@ -56,6 +62,15 @@ public class Member {
 
     public void updateHeight(Double height) {
         this.height = height;
+    }
+
+    public void updateProfile(String name, String introduction) {
+        if (name != null) this.name = name;
+        if (introduction != null) this.introduction = introduction;
+    }
+
+    public void updateProfileImageUrl(String profileImageUrl) {
+        this.profileImageUrl = profileImageUrl;
     }
 
     public void updatePrivacySettings(PrivacyOption weightPrivacy, PrivacyOption musclePrivacy, PrivacyOption fatPrivacy) {

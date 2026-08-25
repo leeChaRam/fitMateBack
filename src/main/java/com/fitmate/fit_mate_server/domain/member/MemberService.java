@@ -5,6 +5,9 @@ import java.util.regex.Pattern;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.fitmate.fit_mate_server.global.upload.ImageUploadService;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -13,10 +16,12 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @Transactional
 public class MemberService {
-    
+
     private final MemberRepository memberRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final ImageUploadService imageUploadService;
 
     // 비밀번호 정책: 영문 + 숫자 + 특수문자 모두 포함, 8~20자
     // MemberJoinRequest의 @Pattern과 동일한 규칙 (서비스 레벨 이중 방어)
@@ -29,14 +34,39 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
     
+        return toResponse(member);
+    }
+
+    /** 이름, 자기소개 수정 (null인 필드는 변경하지 않음) */
+    public MemberResponse updateProfile(Long memberId, MemberUpdateRequest request) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        member.updateProfile(request.getName(), request.getIntroduction());
+        return toResponse(member);
+    }
+
+    /** 프로필 사진 업로드 및 교체 */
+    public MemberResponse updateProfileImage(Long memberId, MultipartFile image) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        String imageUrl = imageUploadService.upload(image, "fitmate/profile");
+        member.updateProfileImageUrl(imageUrl);
+        return toResponse(member);
+    }
+
+    private MemberResponse toResponse(Member member) {
         return MemberResponse.builder()
             .id(member.getId())
             .email(member.getEmail())
             .name(member.getName())
+            .introduction(member.getIntroduction())
+            .profileImageUrl(member.getProfileImageUrl())
             .height(member.getHeight())
             .build();
     }
-    
+
     public Long join(MemberJoinRequest request){
         // 1. 생년월일 검증 (서버 시간 기준 미래 불가)
         validateBirthDate(request.getBirthDate());
