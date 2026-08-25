@@ -64,9 +64,10 @@ public class Member {
         this.height = height;
     }
 
-    public void updateProfile(String name, String introduction) {
+    public void updateProfile(String name, String introduction, Double height) {
         if (name != null) this.name = name;
         if (introduction != null) this.introduction = introduction;
+        if (height != null) this.height = height;
     }
 
     public void updateProfileImageUrl(String profileImageUrl) {

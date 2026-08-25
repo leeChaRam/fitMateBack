@@ -37,12 +37,12 @@ public class MemberService {
         return toResponse(member);
     }
 
-    /** 이름, 자기소개 수정 (null인 필드는 변경하지 않음) */
+    /** 이름, 자기소개, 키 수정 (null인 필드는 변경하지 않음) */
     public MemberResponse updateProfile(Long memberId, MemberUpdateRequest request) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        member.updateProfile(request.getName(), request.getIntroduction());
+        member.updateProfile(request.getName(), request.getIntroduction(), request.getHeight());
         return toResponse(member);
     }
 
