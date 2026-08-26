@@ -2,10 +2,13 @@ package com.fitmate.fit_mate_server.domain.member;
 
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,7 +37,20 @@ public class Member {
 
     private String profileImageUrl;
 
+    // Cloudinary 삭제 시 필요한 식별자 (프로필 사진 교체/탈퇴 시 원본 삭제용)
+    private String profileImagePublicId;
+
     private LocalDate birthDate;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private MemberStatus status = MemberStatus.ACTIVE;
+
+    // 탈퇴 처리된 시각 (soft delete). 이후 유예기간이 지나면 배치로 개인정보를 익명화함
+    private LocalDateTime withdrawnAt;
+
+    // 개인정보 익명화 처리가 완료된 시각. null이면 아직 미처리
+    private LocalDateTime anonymizedAt;
 
     @Column(nullable = false)
     private Double height;
@@ -70,8 +86,31 @@ public class Member {
         if (height != null) this.height = height;
     }
 
-    public void updateProfileImageUrl(String profileImageUrl) {
+    public void updateProfileImage(String profileImageUrl, String profileImagePublicId) {
         this.profileImageUrl = profileImageUrl;
+        this.profileImagePublicId = profileImagePublicId;
+    }
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
+    // 탈퇴 처리: 즉시 로그인은 막되, 유예기간 동안은 개인정보를 남겨둠 (실수 탈퇴 대응)
+    public void withdraw() {
+        this.status = MemberStatus.WITHDRAWN;
+        this.withdrawnAt = LocalDateTime.now();
+    }
+
+    // 유예기간이 지난 탈퇴 회원의 개인정보를 익명화 (배치에서 호출)
+    public void anonymize() {
+        this.email = "withdrawn-" + this.id + "@fitmate.local";
+        this.password = "";
+        this.name = null;
+        this.introduction = null;
+        this.profileImageUrl = null;
+        this.profileImagePublicId = null;
+        this.birthDate = null;
+        this.anonymizedAt = LocalDateTime.now();
     }
 
     public void updatePrivacySettings(PrivacyOption weightPrivacy, PrivacyOption musclePrivacy, PrivacyOption fatPrivacy) {

@@ -17,6 +17,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.fitmate.fit_mate_server.global.jwt.JwtAuthenticationFilter;
 import com.fitmate.fit_mate_server.global.jwt.JwtTokenProvider;
+import com.fitmate.fit_mate_server.global.jwt.TokenBlacklist;
 
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklist tokenBlacklist;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -54,7 +56,7 @@ public class SecurityConfig {
                 response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "인증이 필요합니다.");
             }))
             .addFilterBefore(
-                new JwtAuthenticationFilter(jwtTokenProvider),
+                new JwtAuthenticationFilter(jwtTokenProvider, tokenBlacklist),
                 UsernamePasswordAuthenticationFilter.class
             );
 

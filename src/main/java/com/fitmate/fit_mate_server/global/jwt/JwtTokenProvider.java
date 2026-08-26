@@ -50,6 +50,12 @@ public class JwtTokenProvider {
         return Long.parseLong(claims.getSubject());
     }
 
+    /** 토큰의 만료 시각 추출 (블랙리스트 등록 시 만료 시각까지만 보관하기 위해 사용) */
+    public Date getExpiration(String token) {
+        Claims claims = parseClaims(token);
+        return claims.getExpiration();
+    }
+
     /** 토큰 유효성 검증 (서명 위조, 만료 등을 모두 여기서 걸러냄) */
     public boolean validateToken(String token) {
         try {

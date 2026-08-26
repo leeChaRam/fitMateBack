@@ -12,4 +12,7 @@ public interface BodyInfoRepository extends JpaRepository<BodyInfo, Long> {
 
     // 홈 화면 "마지막 기록일" 계산용 - 최신 기록 1건만 조회 (기록이 없으면 empty)
     Optional<BodyInfo> findTopByMemberIdOrderByMeasureDateDesc(Long memberId);
+
+    // 회원 탈퇴 유예기간 만료 후 배치에서 체성분 기록을 완전 파기할 때 사용
+    void deleteByMemberId(Long memberId);
 }

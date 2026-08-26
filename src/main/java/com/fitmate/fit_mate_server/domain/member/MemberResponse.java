@@ -14,4 +14,7 @@ public class MemberResponse {
     private String introduction;
     private String profileImageUrl;
     private Double height;
+    private PrivacyOption weightPrivacy;
+    private PrivacyOption musclePrivacy;
+    private PrivacyOption fatPrivacy;
 }

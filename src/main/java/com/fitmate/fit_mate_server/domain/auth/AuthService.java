@@ -5,8 +5,10 @@ import org.springframework.stereotype.Service;
  
 import com.fitmate.fit_mate_server.domain.member.Member;
 import com.fitmate.fit_mate_server.domain.member.MemberRepository;
+import com.fitmate.fit_mate_server.domain.member.MemberStatus;
 import com.fitmate.fit_mate_server.global.jwt.JwtTokenProvider;
- 
+import com.fitmate.fit_mate_server.global.jwt.TokenBlacklist;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -16,6 +18,7 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final TokenBlacklist tokenBlacklist;
 
     public LoginResponse login(LoginRequest request) {
         Member member = memberRepository.findByEmail(request.getEmail())
@@ -24,7 +27,11 @@ public class AuthService {
         if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
- 
+
+        if (member.getStatus() == MemberStatus.WITHDRAWN) {
+            throw new IllegalArgumentException("탈퇴한 계정입니다.");
+        }
+
         String token = jwtTokenProvider.createToken(member.getId(), member.getEmail());
  
         return LoginResponse.builder()
@@ -33,6 +40,11 @@ public class AuthService {
             .email(member.getEmail())
             .name(member.getName())
             .build();
+    }
+
+    // 만료 전까지는 계속 유효한 토큰이므로, 로그아웃 시 만료 시각까지만 블랙리스트에 등록해 막습니다.
+    public void logout(String token) {
+        tokenBlacklist.blacklist(token, jwtTokenProvider.getExpiration(token));
     }
 
 }

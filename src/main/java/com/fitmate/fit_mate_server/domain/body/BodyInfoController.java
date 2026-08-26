@@ -23,7 +23,6 @@ public class BodyInfoController {
     @PostMapping
     public ResponseEntity<String> saveBodyInfo(@AuthenticationPrincipal Long memberId, @Valid @RequestBody BodyInfoRequest request) {
         bodyInfoService.saveBodyInfo(memberId, request);
-        System.out.println("break point 확인해보자 ");
         return ResponseEntity.status(HttpStatus.CREATED).body("체성분 기록 저장 완료");
     }
 

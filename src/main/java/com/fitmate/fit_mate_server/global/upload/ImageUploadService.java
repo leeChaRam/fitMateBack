@@ -21,8 +21,8 @@ public class ImageUploadService {
 
     private final Cloudinary cloudinary;
 
-    /** 이미지를 Cloudinary의 지정 폴더에 업로드하고 접근 가능한 URL을 반환 */
-    public String upload(MultipartFile file, String folder) {
+    /** 이미지를 Cloudinary의 지정 폴더에 업로드하고 접근 URL과 public_id를 반환 */
+    public UploadResult upload(MultipartFile file, String folder) {
         validate(file);
 
         try {
@@ -30,10 +30,22 @@ public class ImageUploadService {
                     file.getBytes(),
                     ObjectUtils.asMap("folder", folder)
             );
-            return (String) result.get("secure_url");
+            return new UploadResult((String) result.get("secure_url"), (String) result.get("public_id"));
         } catch (IOException e) {
             throw new IllegalStateException("이미지 업로드에 실패했습니다.", e);
         }
+    }
+
+    /** public_id로 Cloudinary에 저장된 이미지를 삭제 */
+    public void delete(String publicId) {
+        try {
+            cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
+        } catch (IOException e) {
+            throw new IllegalStateException("이미지 삭제에 실패했습니다.", e);
+        }
+    }
+
+    public record UploadResult(String url, String publicId) {
     }
 
     private void validate(MultipartFile file) {

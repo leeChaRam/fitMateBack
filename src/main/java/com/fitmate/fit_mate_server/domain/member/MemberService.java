@@ -46,14 +46,65 @@ public class MemberService {
         return toResponse(member);
     }
 
-    /** 프로필 사진 업로드 및 교체 */
+    /** 체중/근육량/체지방률 공개 범위 수정 (null인 필드는 변경하지 않음) */
+    public MemberResponse updatePrivacySettings(Long memberId, MemberPrivacyUpdateRequest request) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        member.updatePrivacySettings(request.getWeightPrivacy(), request.getMusclePrivacy(), request.getFatPrivacy());
+        return toResponse(member);
+    }
+
+    /** 비밀번호 변경: 현재 비밀번호 확인 후 새 비밀번호로 교체 */
+    public void changePassword(Long memberId, MemberPasswordUpdateRequest request) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), member.getPassword())) {
+            throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+        }
+
+        validatePassword(request.getNewPassword());
+        validatePasswordMatch(request.getNewPassword(), request.getCheckNewPassword());
+
+        if (passwordEncoder.matches(request.getNewPassword(), member.getPassword())) {
+            throw new IllegalArgumentException("새 비밀번호는 현재 비밀번호와 달라야 합니다.");
+        }
+
+        member.updatePassword(passwordEncoder.encode(request.getNewPassword()));
+    }
+
+    /** 프로필 사진 업로드 및 교체 (기존 사진은 Cloudinary에서 삭제) */
     public MemberResponse updateProfileImage(Long memberId, MultipartFile image) {
         Member member = memberRepository.findById(memberId)
             .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
 
-        String imageUrl = imageUploadService.upload(image, "fitmate/profile");
-        member.updateProfileImageUrl(imageUrl);
+        String oldPublicId = member.getProfileImagePublicId();
+
+        ImageUploadService.UploadResult result = imageUploadService.upload(image, "fitmate/profile");
+        member.updateProfileImage(result.url(), result.publicId());
+
+        if (oldPublicId != null) {
+            imageUploadService.delete(oldPublicId);
+        }
+
         return toResponse(member);
+    }
+
+    /** 회원 탈퇴: 비밀번호 확인 후 프로필 사진은 즉시 삭제, 나머지 개인정보는 유예기간 후 배치로 익명화됨 */
+    public void withdraw(Long memberId, MemberWithdrawRequest request) {
+        Member member = memberRepository.findById(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 회원입니다."));
+
+        if (!passwordEncoder.matches(request.getPassword(), member.getPassword())) {
+            throw new IllegalArgumentException("비밀번호가 일치하지 않습니다.");
+        }
+
+        if (member.getProfileImagePublicId() != null) {
+            imageUploadService.delete(member.getProfileImagePublicId());
+        }
+
+        member.withdraw();
     }
 
     private MemberResponse toResponse(Member member) {
@@ -64,6 +115,9 @@ public class MemberService {
             .introduction(member.getIntroduction())
             .profileImageUrl(member.getProfileImageUrl())
             .height(member.getHeight())
+            .weightPrivacy(member.getWeightPrivacy())
+            .musclePrivacy(member.getMusclePrivacy())
+            .fatPrivacy(member.getFatPrivacy())
             .build();
     }
 
