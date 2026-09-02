@@ -6,11 +6,11 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 
 public enum PrivacyOption {
-    PRIVATE(1, "🔒 나만 보기"),
-    DELTA_ONLY(2, "📈 변화량만 공개"),
-    PUBLIC(3, "👥 그룹 전체 공개");
+    PRIVATE(0, "🔒 나만 보기"),
+    DELTA_ONLY(1, "📈 변화량만 공개"),
+    PUBLIC(2, "👥 그룹 전체 공개");
 
-    private final int dbValue; // DB에 저장될 숫자 (1, 2, 3)
+    private final int dbValue; // DB에 저장될 숫자 (0, 1, 2)
     private final String title;
 
     PrivacyOption(int dbValue, String title) {
