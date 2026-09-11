@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fitmate.fit_mate_server.global.jwt.BearerTokenExtractor;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
@@ -16,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final AuthService authService;
- 
+
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest request) {
         return authService.login(request);
@@ -24,7 +26,7 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ResponseEntity<String> logout(@RequestHeader("Authorization") String authorizationHeader) {
-        String token = authorizationHeader.substring("Bearer ".length());
+        String token = BearerTokenExtractor.extract(authorizationHeader);
         authService.logout(token);
         return ResponseEntity.ok("로그아웃 성공");
     }

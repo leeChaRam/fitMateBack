@@ -14,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 
 import com.fitmate.fit_mate_server.domain.auth.AuthService;
+import com.fitmate.fit_mate_server.global.jwt.BearerTokenExtractor;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -78,7 +79,7 @@ public class MemberController {
                                             @RequestHeader("Authorization") String authorizationHeader) {
         memberService.withdraw(memberId, request);
 
-        String token = authorizationHeader.substring("Bearer ".length());
+        String token = BearerTokenExtractor.extract(authorizationHeader);
         authService.logout(token);
 
         return ResponseEntity.ok("탈퇴 처리되었습니다.");
