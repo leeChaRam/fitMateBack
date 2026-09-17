@@ -83,6 +83,7 @@ public class Mate {
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+    
     public void updateInfo(String name, String coverImageUrl, String coverImagePublicId) {
         if (name != null) this.name = name;
         if (coverImageUrl != null) {
