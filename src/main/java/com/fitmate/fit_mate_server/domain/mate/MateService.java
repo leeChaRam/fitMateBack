@@ -2,6 +2,8 @@ package com.fitmate.fit_mate_server.domain.mate;
 
 import java.util.UUID;
 import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -178,6 +180,17 @@ public class MateService {
         // TODO: 피드/댓글/반응 도메인 구현 후 여기서 함께 삭제 처리
         mateMemberRepository.deleteByMate(mate);
         mateRepository.delete(mate);
+    }
+
+    // 멤버 목록 조회: 멤버만 조회 가능
+    public List<MateMemberResponse> getMembers(Long viewerId, Long mateId) {
+        Mate mate = getMateOrThrow(mateId);
+        mateMemberRepository.findByMateAndMemberId(mate, viewerId)
+                    .orElseThrow(() -> new IllegalArgumentException("서클 멤버만 조회할 수 있습니다."));
+
+        return mateMemberRepository.findByMate(mate).stream()
+                .map(MateMemberResponse::from)
+                .collect(Collectors.toList());
     }
     
 }
