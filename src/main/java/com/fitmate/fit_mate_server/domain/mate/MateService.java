@@ -91,7 +91,7 @@ public class MateService {
 
     private Mate getMateOrThrow(Long mateId) {
         return mateRepository.findById(mateId)
-                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사람입니다."));
+                            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 그룹입니다."));
     }
 
     private MateResponse toResponse(Mate mate, MateMemberRole myRole) {
