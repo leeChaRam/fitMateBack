@@ -42,4 +42,50 @@ public class MateFeedService {
         return new MetricDisplay(value, delta);
     }
 
+    private String calculateDeltaText(Double current, Double previous) {
+        if (current == null || previous == null) return null;
+        double diff = current - previous;
+        double rounded = Math.round(Math.abs(diff) * 10.0) / 10.0;
+        if (Math.abs(diff) < 0.05) return "0.0";
+        return diff > 0 ? "▲ " + rounded : "▼ " + rounded;
+    }
+
+    // 서클 멤버들의 체성분 기록을 피드 아이템으로 변환
+    private List<MateFeedItemResponse> buildBodyFeedItems(List<Member> members) {
+        List<MateFeedItemResponse> items = new ArrayList<>();
+
+        for (Member member : members) {
+            List<BodyInfo> history = bodyInfoRepository.findTop10ByMemberIdOrderByMeasureDateDesc(member.getId());
+
+            for (int i = 0; i< history.size(); i++) {
+                BodyInfo current = history.get(i);
+                BodyInfo previous = (i + 1 < history.size()) ? history.get(i+1) : null;
+
+                MetricDisplay weight = filterMetric(member.getWeightPrivacy(), current.getWeight(),
+                                                    previous != null ? previous.getWeight() : null);
+                MetricDisplay muscle = filterMetric(member.getMusclePrivacy(), current.getMuscleMass(),
+                        previous != null ? previous.getMuscleMass() : null);
+                MetricDisplay fat = filterMetric(member.getFatPrivacy(), current.getFatMass(),
+                        previous != null ? previous.getFatMass() : null);
+            
+                items.add(MateFeedItemResponse.builder()
+                        .postType(FeedPostType.BODY_INFO)
+                        .postId(current.getId())
+                        .authorId(member.getId())
+                        .authorName(member.getName())
+                        .authorProfileImageUrl(member.getProfileImageUrl())
+                        .createdAt(current.getCreatedAt())
+                        .measureDate(current.getMeasureDate())
+                        .weightValue(weight.value())
+                        .weightDelta(weight.delta())
+                        .muscleValue(muscle.value())
+                        .muscleDelta(muscle.delta())
+                        .fatValue(fat.value())
+                        .fatDelta(fat.delta())
+                        .build());
+            }
+        }
+        return items;
+    } 
+
 }
