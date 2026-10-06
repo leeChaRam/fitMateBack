@@ -15,4 +15,5 @@ public interface MateMemberRepository extends JpaRepository<MateMember, Long> {
     boolean existsByMateAndMemberId(Mate mate, Long memberId); // 이미 가입되어 있는 건지 확인
 
     Optional<MateMember> findByMateAndMemberId(Mate mate, Long memberId); // 역할까지 필요할 때
+    void deleteByMate(Mate mate); // 서클 삭제 시 멤버 일괄 삭제
 }

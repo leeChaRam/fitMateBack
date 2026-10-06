@@ -22,7 +22,7 @@ public class MateController {
     }
     
     @GetMapping("/{id}")
-    public MateResponse getMate(AuthenticationPrincipal Long memberId, @PathVariable Long id) {
+    public MateResponse getMate(@AuthenticationPrincipal Long memberId, @PathVariable Long id) {
         return mateService.getMate(memberId, id);
     }
 

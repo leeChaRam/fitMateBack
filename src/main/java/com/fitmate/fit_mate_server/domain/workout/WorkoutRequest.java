@@ -19,7 +19,7 @@ public class WorkoutRequest {
     private String customType; // workoutType == OTHER 일 때만 필수(Service에서 검증)
 
     @NotNull(message = "운동 시간은 필수입니다.")
-    @Min(value = 1, messgae ="운동 시간은 1분 이상이어야 합니다.")
+    @Min(value = 1, message ="운동 시간은 1분 이상이어야 합니다.")
     @Max(value = 600, message = "운동 시간은 600분을 초과할 수 없습니다.")
     private Integer durationMinutes;
 
