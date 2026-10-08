@@ -1,8 +1,7 @@
 package com.fitmate.fit_mate_server.domain.mate.feed;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -128,6 +127,50 @@ public class MateFeedService {
                 Comparator.nullsLast(Comparator.reverseOrder())));
 
         return merged;
+    }
+
+    // 피드 아이템마다 반응 수 / 내 반응 / 댓글 수를  붙여 반환 (타입별 IN 쿼리로 일괄 조회 -> N+1 방지)
+    private List<MateFeedItemResponse> attachReactionAndComments(Mate mate, Long loginMemberId, List<MateFeedItemResponse> items) {
+        // 1) 글 타입별로 postId 모으기(BODY_INFO ->[1, 3, 5], WORKOUT -> [2, 4]
+        Map<FeedPostType, List<Long>> postIdsByType = new HashMap<>();
+        for (MateFeedItemResponse item : items) {
+            FeedPostType type = item.getPostType();
+            if (!postIdsByType.containsKey(type)) {          // 서랍이 없으면
+                postIdsByType.put(type, new ArrayList<>());  // 새 서랍 만들고
+            }
+            postIdsByType.get(type).add(item.getPostId());   // 서랍에 id 넣기
+        }
+
+        // 2) 타입별로 반응/댓글 한 번에 조회 
+        List<MateReaction> reactions = new ArrayList<>();
+        List<MateComment> comments = new ArrayList<>();
+        for(Map.Entry<FeedPostType, List<Long> entry : postIdsByType.entrySet()) {
+            reactions.addAll(mateReactionRepository.findByMateAndPostTypeAndPostIdIn(mate, entry.getKey(), entry.getValue()));
+            comments.addAll(mateCommentRepository.findByMateAndPostTypeAndPostIdIn(mate, entry.getKey(), entry.getValue()));
+        }
+        
+        // 3) 글(PostKey)별로 바구니에 나눠 담기
+        Map<PostKey, List<MateReaction>> reactionsByPost = reactions.stream()
+                .collect(Collectors.groupingBy(c -> new PostKey(c.getPostType(), c.getPostId())));
+        Map<PostKey, Long> commentCountByPost = comments.stream()
+                .collect(Collectors.groupingBy(c -> new PostKey(c.getPostType(), c.getPostId()), Collectors.counting()));
+
+        // 4) 쪽지마다 반응 수 / 내 반응 / 댓글 수 채워서 새로 만들기 
+        List<MateFeedItemResponse> result = new ArrayList<>();
+        for (MateFeedItemResponse item : items) {
+            PostKey key = new PostKey(item.getPostType(), item.getPostId());
+
+            Map<MateReactionEmoji, Long> reactionsCounts = new EnumMap<>(MateReactionEmoji.class);
+            MateReactionEmoji myReaction = null;
+            for (MateReaction reaction : reactionsByPost.getOrDefault(key, List.of())) {
+                reactionsCounts.merge(reaction.getEmoji(), 1L, Long::sum);
+                if(reaction.getMember().getId().equals(loginMemberId)) {
+                    myReaction = reaction.getEmoji();
+                }
+
+            }
+        }
+    
     }
 
 }
